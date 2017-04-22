@@ -1,5 +1,6 @@
 
-// Setting up the canvas
+// Variables and constants
+
 
 var CANVAS_WIDTH = 800;
 var CANVAS_HEIGHT = 500;
@@ -8,7 +9,11 @@ var canvas;
 var ctx;
 var canvasX;
 var canvasY;
-var counterMissiles = []
+var counterMissiles = [];
+var batteries = [];
+
+
+// Initial setup
 
 var init = function() {
   var canvasElement = $("<canvas id='canvas' width='" + CANVAS_WIDTH + 
@@ -16,14 +21,9 @@ var init = function() {
   canvas = canvasElement.get(0)
   ctx = canvas.getContext("2d");
   $("body").append(canvasElement);
+  var battery = new Battery(CANVAS_WIDTH/2, CANVAS_HEIGHT - 50);
+  batteries.push(battery);
 }
-
-init();
-
-setInterval(function() {
-  update();
-  draw();
-}, 1000/FPS);
 
 
 // Update canvas
@@ -38,7 +38,7 @@ var update = function() {
 var doMouseDown = function(event) {
   canvasX = event.pageX;
   canvasY = event.pageY;
-  var missile = new CounterMissile();
+  var missile = new CounterMissile(batteries[0]);
   counterMissiles.push(missile);
 };
 
@@ -47,7 +47,10 @@ var doMouseDown = function(event) {
 
 var draw = function() {
   ctx.fillStyle = "#000";
-  ctx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+  ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+  batteries.forEach(function(battery) {
+    battery.draw();
+  });
   counterMissiles
     .filter(function(counterMissile) {
       return counterMissile.active;
@@ -59,12 +62,29 @@ var draw = function() {
 };
 
 
+// Battery class
+
+var Battery = function(x, y) {
+  this.x = x;
+  this.y = y;
+  this.width = 30;
+  this.height = 30;
+  this.draw = function() {
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
+                this.width,this.height);
+  };
+};
+
+
 // Counter Missile class
 
-var CounterMissile = function() {
+var CounterMissile = function(battery) {
   this.active = true;
-  this.x = CANVAS_WIDTH/2;
-  this.y = CANVAS_HEIGHT/2;
+  this.width = 6;
+  this.height = 10;
+  this.x = battery.x;
+  this.y = battery.y;
   this.xf = canvasX;
   this.yf = canvasY;
   this.velocity = 5;
@@ -76,18 +96,31 @@ var CounterMissile = function() {
     this.active = false;
   };
   this.draw = function() {
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.x, this.y, 5, 5);
+    if (this.active) {
+      ctx.fillStyle = "red";
+      ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
+                   this.width,this.height);
+    }
   };
   this.update = function() {
     if (this.travelingRight && this.x <= this.xf) {
-      console.log(this.x, this.y, this.xf, this.yf);
       this.x += this.velocity * Math.cos(this.angleRad);
       this.y += this.velocity * Math.sin(this.angleRad);
     } else if (!this.travelingRight && this.x > this.xf) {
       this.x -= this.velocity * Math.cos(this.angleRad);
       this.y -= this.velocity * Math.sin(this.angleRad);
+    } else {
+      this.active = false;
     }
   };
 };
+
+
+
+init();
+
+setInterval(function() {
+  update();
+  draw();
+}, 1000/FPS);
 
