@@ -11,6 +11,7 @@ var canvasX;
 var canvasY;
 var counterMissiles = [];
 var batteries = [];
+var explosions = [];
 
 
 // Initial setup
@@ -32,6 +33,9 @@ var update = function() {
   canvas.addEventListener("mousedown", doMouseDown, false);
   counterMissiles.forEach(function(counterMissile) {
     counterMissile.update();
+  });
+  explosions.forEach(function(explosion) {
+    explosion.update();
   });
 };
 
@@ -58,7 +62,9 @@ var draw = function() {
     .forEach(function(counterMissile) {
     counterMissile.draw();
   });
-
+  explosions.forEach(function(explosion) {
+    explosion.draw();
+  });
 };
 
 
@@ -82,7 +88,7 @@ var Battery = function(x, y) {
 var CounterMissile = function(battery) {
   this.active = true;
   this.width = 6;
-  this.height = 10;
+  this.height = 6;
   this.x = battery.x;
   this.y = battery.y;
   this.xf = canvasX;
@@ -94,23 +100,58 @@ var CounterMissile = function(battery) {
   this.angleRad = Math.atan(this.yDiff / this.xDiff);
   this.explode = function() {
     this.active = false;
+    explosions.push(new Explosion(this.x, this.y));
   };
   this.draw = function() {
-    if (this.active) {
-      ctx.fillStyle = "red";
-      ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
-                   this.width,this.height);
-    }
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
+                 this.width,this.height);
   };
   this.update = function() {
-    if (this.travelingRight && this.x <= this.xf) {
-      this.x += this.velocity * Math.cos(this.angleRad);
-      this.y += this.velocity * Math.sin(this.angleRad);
-    } else if (!this.travelingRight && this.x > this.xf) {
-      this.x -= this.velocity * Math.cos(this.angleRad);
-      this.y -= this.velocity * Math.sin(this.angleRad);
-    } else {
-      this.active = false;
+    if (this.active) {
+      if (this.travelingRight) {
+        this.x += this.velocity * Math.cos(this.angleRad);
+        this.y += this.velocity * Math.sin(this.angleRad);
+        if (this.x > this.xf) this.explode();
+      } else if (!this.travelingRight) {
+        this.x -= this.velocity * Math.cos(this.angleRad);
+        this.y -= this.velocity * Math.sin(this.angleRad);
+        if (this.x <= this.xf) this.explode();
+      }
+    }
+  };
+};
+
+
+// Explosion class
+
+var Explosion = function(x, y) {
+  this.x = x;
+  this.y = y;
+  this.explodeSpeed = 1;
+  this.radius = 3;
+  this.explosionSize = 25;
+  this.grow = true;
+  this.shrink = false;
+  this.draw = function() {
+    ctx.fillStyle = "orange";
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+    ctx.fill();
+    ctx.closePath();
+  };
+  this.update = function() {
+    if (this.grow) {
+      this.radius += 1;
+    } else if (this.shrink) {
+      this.radius -= 1;
+    }
+    if (this.radius > this.explosionSize) {
+      this.shrink = true;
+      this.grow = false;
+    }
+    else if (this.shrink && this.radius === 0) {
+      this.shrink = false;
     }
   };
 };
