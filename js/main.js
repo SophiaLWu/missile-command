@@ -10,6 +10,7 @@ var canvasX;
 var canvasY;
 var tick = 0;
 var batteries = [];
+var cities = [];
 var counterMissiles = [];
 var enemyMissiles = [];
 var explosions = [];
@@ -75,6 +76,20 @@ var createBatteries = function() {
   batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
                  new Battery(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50),
                  new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
+};
+
+
+// Create cities
+
+var createCities = function() {
+  var oneFourthD = (CANVAS_WIDTH / 2 - 20) / 4;
+  cities.push(new City(20 + oneFourthD, CANVAS_HEIGHT - 50),
+              new City(20 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
+              new City(20 + 3 * oneFourthD, CANVAS_HEIGHT - 50),
+              new City(CANVAS_WIDTH / 2 + oneFourthD, CANVAS_HEIGHT - 50),
+              new City(CANVAS_WIDTH / 2 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
+              new City(CANVAS_WIDTH / 2 + 3 * oneFourthD, CANVAS_HEIGHT - 50));
+
 };
 
 
@@ -198,8 +213,8 @@ var EnemyMissile = function() {
   this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
   this.y = 0;
   this.velocity = 2;
-  this.targets = batteries.map(function(battery) {
-                  return [battery.x, battery.y];
+  this.targets = (batteries.concat(cities)).map(function(building) {
+                  return [building.x, building.y];
                  });
   this.randomTarget = this.targets[Math.floor(Math.random() * 
                                    this.targets.length)];
@@ -262,6 +277,7 @@ var Explosion = function(x, y) {
 
 init();
 createBatteries();
+createCities();
 
 setInterval(function() {
   tick += 1;
