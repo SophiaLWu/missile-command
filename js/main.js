@@ -8,6 +8,7 @@ var canvas;
 var ctx;
 var canvasX;
 var canvasY;
+var tick = 0;
 var batteries = [];
 var counterMissiles = [];
 var enemyMissiles = [];
@@ -65,6 +66,15 @@ var update = function() {
   explosions.forEach(function(explosion) {
     explosion.update();
   });
+};
+
+
+// Add random enemy missiles
+
+var addEnemyMissiles = function() {
+  if (tick % 30 == 0 && enemyMissiles.length < 10) {
+    enemyMissiles.push(new EnemyMissile);
+  }
 };
 
 
@@ -157,6 +167,7 @@ var EnemyMissile = function() {
   Missile.call(this);
   this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
   this.y = 0;
+  this.velocity = 2;
   this.angleRad = Math.random() * (Math.PI) - (Math.PI / 2);
   this.update = function() {
     if (this.active) {
@@ -213,6 +224,8 @@ var Explosion = function(x, y) {
 init();
 
 setInterval(function() {
+  tick += 1;
+  addEnemyMissiles();
   update();
   draw();
 }, 1000/FPS);
