@@ -109,6 +109,15 @@ var addEnemyMissiles = function() {
 };
 
 
+// Handles collision of enemy missiles with buildings
+
+var handleCollisions = function() {
+  enemyMissiles.forEach(function(missile) {
+    if (missile.active && missile.collide()) missile.explode();
+  });
+};
+
+
 // Mouseclick event
 
 var doMouseDown = function(event) {
@@ -177,9 +186,9 @@ var Missile = function() {
   };
   this.draw = function(color) {
     ctx.fillStyle = color;
-    ctx.fillRect(this.x - this.width/2,this.y-this.height/2,
+    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
                  this.width,this.height);
-  }
+  };
 };
 
 
@@ -219,10 +228,11 @@ var EnemyMissile = function() {
   this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
   this.y = 0;
   this.velocity = 2;
-  this.targets = (batteries.concat(cities)).map(function(building) {
+  this.targets = batteries.concat(cities); 
+  this.targetPositions = this.targets.map(function(building) {
                   return [building.x, building.y];
                  });
-  this.randomTarget = this.targets[Math.floor(Math.random() * 
+  this.randomTarget = this.targetPositions[Math.floor(Math.random() * 
                                    this.targets.length)];
   this.xf = this.randomTarget[0];
   this.yf = this.randomTarget[1];
@@ -239,6 +249,18 @@ var EnemyMissile = function() {
         this.y -= this.velocity * Math.sin(this.angleRad);
       }
     }
+  };
+  this.collide = function() {
+    var collided = false;
+    this.targets.forEach(function(building) {
+      if (this.x >= building.x - building.width/2 &&
+          this.x <= building.x + building.width/2 &&
+          this.y >= building.y - building.height/2) {
+        collided = true;
+        return false;
+      }
+    }.bind(this));
+    return collided;
   };
 };
 
@@ -288,6 +310,7 @@ createCities();
 setInterval(function() {
   tick += 1;
   addEnemyMissiles();
+  handleCollisions();
   update();
   draw();
 }, 1000/FPS);
