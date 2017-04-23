@@ -1,7 +1,6 @@
 
 // Variables and constants
 
-
 var CANVAS_WIDTH = 800;
 var CANVAS_HEIGHT = 500;
 var FPS = 30;
@@ -22,8 +21,9 @@ var init = function() {
   canvas = canvasElement.get(0)
   ctx = canvas.getContext("2d");
   $("body").append(canvasElement);
-  var battery = new Battery(CANVAS_WIDTH/2, CANVAS_HEIGHT - 50);
-  batteries.push(battery);
+  batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
+                 new Battery(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50),
+                 new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
 }
 
 
@@ -42,8 +42,15 @@ var update = function() {
 var doMouseDown = function(event) {
   canvasX = event.pageX;
   canvasY = event.pageY;
-  var missile = new CounterMissile(batteries[0]);
-  counterMissiles.push(missile);
+  var battery;
+  if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
+    battery = 0;
+  } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
+    battery = 1;
+  } else {
+    battery = 2;
+  }
+  counterMissiles.push(new CounterMissile(batteries[battery]));
 };
 
 
