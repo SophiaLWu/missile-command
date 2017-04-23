@@ -15,7 +15,7 @@ var enemyMissiles = [];
 var explosions = [];
 
 
-// Initial setup
+// Initial canvas setup
 
 var init = function() {
   var canvasElement = $("<canvas id='canvas' width='" + CANVAS_WIDTH + 
@@ -23,9 +23,6 @@ var init = function() {
   canvas = canvasElement.get(0)
   ctx = canvas.getContext("2d");
   $("body").append(canvasElement);
-  batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
-                 new Battery(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50),
-                 new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
 }
 
 
@@ -66,6 +63,15 @@ var update = function() {
   explosions.forEach(function(explosion) {
     explosion.update();
   });
+};
+
+
+// Create batteries
+
+var createBatteries = function() {
+  batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
+                 new Battery(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50),
+                 new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
 };
 
 
@@ -230,6 +236,7 @@ var Explosion = function(x, y) {
 // Game execution
 
 init();
+createBatteries();
 
 setInterval(function() {
   tick += 1;
