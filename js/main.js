@@ -32,7 +32,10 @@ var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
   batteries.forEach(function(battery) {
-    battery.draw();
+    battery.draw("yellow");
+  });
+  cities.forEach(function(city) {
+    city.draw("brown");
   });
   counterMissiles.filter(function(counterMissile) {
     return counterMissile.active;
@@ -103,19 +106,41 @@ var doMouseDown = function(event) {
 };
 
 
+// Building class
+
+var Building = function(x, y) {
+  this.width = 30;
+  this.height = 30;
+  this.draw = function(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
+                 this.width,this.height);
+  };
+};
+
+
 // Battery class
 
 var Battery = function(x, y) {
+  Building.call(this);
+  this.x = x;
+  this.y = y;
+};
+
+Battery.prototype = Object.create(Building.prototype);
+
+
+// City class
+
+var City = function(x, y) {
+  Building.call(this);
   this.x = x;
   this.y = y;
   this.width = 30;
-  this.height = 30;
-  this.draw = function() {
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
-                this.width,this.height);
-  };
+  this.height = 40;
 };
+
+City.prototype = Object.create(Building.prototype);
 
 
 // General Missile class
