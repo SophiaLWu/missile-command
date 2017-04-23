@@ -32,6 +32,7 @@ var init = function() {
 var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+  drawEnvironment();
   batteries.forEach(function(battery) {
     battery.draw("yellow");
   });
@@ -69,6 +70,12 @@ var update = function() {
   });
 };
 
+
+// Draw environment
+var drawEnvironment = function() {
+  ctx.fillStyle = "yellow";
+  ctx.fillRect(0, CANVAS_HEIGHT - 35, CANVAS_WIDTH, 35);
+};
 
 // Create batteries
 
@@ -151,8 +158,7 @@ var City = function(x, y) {
   Building.call(this);
   this.x = x;
   this.y = y;
-  this.width = 30;
-  this.height = 40;
+  this.width = 20;
 };
 
 City.prototype = Object.create(Building.prototype);
