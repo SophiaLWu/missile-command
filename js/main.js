@@ -8,8 +8,9 @@ var canvas;
 var ctx;
 var canvasX;
 var canvasY;
-var counterMissiles = [];
 var batteries = [];
+var counterMissiles = [];
+var enemyMissiles = [];
 var explosions = [];
 
 
@@ -27,6 +28,30 @@ var init = function() {
 }
 
 
+// Draw the canvas
+
+var draw = function() {
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+  batteries.forEach(function(battery) {
+    battery.draw();
+  });
+  counterMissiles.filter(function(counterMissile) {
+    return counterMissile.active;
+  }).forEach(function(counterMissile) {
+      counterMissile.draw("green");
+    });
+  enemyMissiles.filter(function(enemyMissile) {
+    return enemyMissile.active;
+  }).forEach(function(enemyMissile) {
+      enemyMissile.draw("red");
+    });
+  explosions.forEach(function(explosion) {
+    explosion.draw();
+  });
+};
+
+
 // Update canvas
 
 var update = function() {
@@ -34,10 +59,16 @@ var update = function() {
   counterMissiles.forEach(function(counterMissile) {
     counterMissile.update();
   });
+  enemyMissiles.forEach(function(enemyMissile) {
+    enemyMissile.update();
+  });
   explosions.forEach(function(explosion) {
     explosion.update();
   });
 };
+
+
+// Mouseclick event
 
 var doMouseDown = function(event) {
   canvasX = event.pageX;
@@ -56,27 +87,6 @@ var doMouseDown = function(event) {
 };
 
 
-// Draw the canvas
-
-var draw = function() {
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-  batteries.forEach(function(battery) {
-    battery.draw();
-  });
-  counterMissiles
-    .filter(function(counterMissile) {
-      return counterMissile.active;
-    })
-    .forEach(function(counterMissile) {
-    counterMissile.draw();
-  });
-  explosions.forEach(function(explosion) {
-    explosion.draw();
-  });
-};
-
-
 // Battery class
 
 var Battery = function(x, y) {
@@ -92,30 +102,37 @@ var Battery = function(x, y) {
 };
 
 
-// Counter Missile class
+// General Missile class
 
-var CounterMissile = function(battery) {
+var Missile = function() {
   this.active = true;
   this.width = 6;
   this.height = 6;
-  this.x = battery.x;
-  this.y = battery.y;
-  this.xf = canvasX;
-  this.yf = canvasY;
   this.velocity = 5;
-  this.xDiff = this.x - this.xf;
-  this.yDiff = this.y - this.yf;
-  this.travelingRight = this.xDiff <= 0 ? true : false;
-  this.angleRad = Math.atan(this.yDiff / this.xDiff);
   this.explode = function() {
     this.active = false;
     explosions.push(new Explosion(this.x, this.y));
   };
-  this.draw = function() {
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
+  this.draw = function(color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(this.x - this.width/2,this.y-this.height/2,
                  this.width,this.height);
-  };
+  }
+};
+
+
+// Counter Missile class
+
+var CounterMissile = function(battery) {
+  Missile.call(this);
+  this.x = battery.x;
+  this.y = battery.y;
+  this.xf = canvasX;
+  this.yf = canvasY;
+  this.xDiff = this.x - this.xf;
+  this.yDiff = this.y - this.yf;
+  this.travelingRight = this.xDiff <= 0 ? true : false;
+  this.angleRad = Math.atan(this.yDiff / this.xDiff);
   this.update = function() {
     if (this.active) {
       if (this.travelingRight) {
@@ -130,6 +147,31 @@ var CounterMissile = function(battery) {
     }
   };
 };
+
+CounterMissile.prototype = Object.create(Missile.prototype);
+
+
+// Enemy Missile class
+
+var EnemyMissile = function() {
+  Missile.call(this);
+  this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
+  this.y = 0;
+  this.angleRad = Math.random() * (Math.PI) - (Math.PI / 2);
+  this.update = function() {
+    if (this.active) {
+      if (this.angleRad >= 0) {
+        this.x += this.velocity * Math.cos(this.angleRad);
+        this.y += this.velocity * Math.sin(this.angleRad);
+      } else {
+        this.x -= this.velocity * Math.cos(this.angleRad);
+        this.y -= this.velocity * Math.sin(this.angleRad);
+      }
+    }
+  };
+};
+
+EnemyMissile.prototype = Object.create(Missile.prototype);
 
 
 // Explosion class
@@ -166,6 +208,7 @@ var Explosion = function(x, y) {
 };
 
 
+// Game execution
 
 init();
 
