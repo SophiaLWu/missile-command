@@ -168,7 +168,16 @@ var EnemyMissile = function() {
   this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
   this.y = 0;
   this.velocity = 2;
-  this.angleRad = Math.random() * (Math.PI) - (Math.PI / 2);
+  this.targets = batteries.map(function(battery) {
+                  return [battery.x, battery.y];
+                 });
+  this.randomTarget = this.targets[Math.floor(Math.random() * 
+                                   this.targets.length)];
+  this.xf = this.randomTarget[0];
+  this.yf = this.randomTarget[1];
+  this.xDiff = this.x - this.xf;
+  this.yDiff = this.y - this.yf;
+  this.angleRad = Math.atan(this.yDiff / this.xDiff);
   this.update = function() {
     if (this.active) {
       if (this.angleRad >= 0) {
