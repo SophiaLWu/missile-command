@@ -43,14 +43,16 @@ var doMouseDown = function(event) {
   canvasX = event.pageX;
   canvasY = event.pageY;
   var battery;
-  if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
-    battery = 0;
-  } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
-    battery = 1;
-  } else {
-    battery = 2;
+  if (canvasY <= CANVAS_HEIGHT - 70) {
+    if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
+      battery = 0;
+    } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
+      battery = 1;
+    } else {
+      battery = 2;
+    }
+    counterMissiles.push(new CounterMissile(batteries[battery]));
   }
-  counterMissiles.push(new CounterMissile(batteries[battery]));
 };
 
 
