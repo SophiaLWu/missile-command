@@ -141,15 +141,14 @@ var CounterMissile = function(battery) {
   this.yf = canvasY;
   this.xDiff = this.x - this.xf;
   this.yDiff = this.y - this.yf;
-  this.travelingRight = this.xDiff <= 0 ? true : false;
   this.angleRad = Math.atan(this.yDiff / this.xDiff);
   this.update = function() {
     if (this.active) {
-      if (this.travelingRight) {
+      if (this.angleRad < 0) {
         this.x += this.velocity * Math.cos(this.angleRad);
         this.y += this.velocity * Math.sin(this.angleRad);
         if (this.x > this.xf) this.explode();
-      } else if (!this.travelingRight) {
+      } else {
         this.x -= this.velocity * Math.cos(this.angleRad);
         this.y -= this.velocity * Math.sin(this.angleRad);
         if (this.x <= this.xf) this.explode();
