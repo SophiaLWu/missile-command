@@ -34,21 +34,17 @@ var draw = function() {
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
   drawEnvironment();
   batteries.forEach(function(battery) {
-    battery.draw("yellow");
+    if (battery.active) battery.draw("yellow");
   });
   cities.forEach(function(city) {
-    city.draw("brown");
+    if (city.active) city.draw("brown");
   });
-  counterMissiles.filter(function(counterMissile) {
-    return counterMissile.active;
-  }).forEach(function(counterMissile) {
-      counterMissile.draw("green");
-    });
-  enemyMissiles.filter(function(enemyMissile) {
-    return enemyMissile.active;
-  }).forEach(function(enemyMissile) {
-      enemyMissile.draw("red");
-    });
+  counterMissiles.forEach(function(counterMissile) {
+    if (counterMissile.active) counterMissile.draw("green");
+  });
+  enemyMissiles.forEach(function(enemyMissile) {
+    if (enemyMissile.active) enemyMissile.draw("red");
+  });
   explosions.forEach(function(explosion) {
     explosion.draw();
   });
@@ -144,12 +140,16 @@ var doMouseDown = function(event) {
 // Building class
 
 var Building = function(x, y) {
+  this.active = true;
   this.width = 30;
   this.height = 30;
   this.draw = function(color) {
     ctx.fillStyle = color;
     ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
                  this.width,this.height);
+  };
+  this.destroy = function() {
+    this.active = false;
   };
 };
 
@@ -207,7 +207,7 @@ var CounterMissile = function(battery) {
   this.xDiff = this.x - this.xf;
   this.yDiff = this.y - this.yf;
   this.angleRad = Math.atan(this.yDiff / this.xDiff);
-  this.velocity = 10;
+  this.velocity = 15;
   this.update = function() {
     if (this.active) {
       if (this.angleRad < 0) {
@@ -233,14 +233,11 @@ var EnemyMissile = function() {
   this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
   this.y = 0;
   this.velocity = 2;
-  this.targets = batteries.concat(cities); 
-  this.targetPositions = this.targets.map(function(building) {
-                  return [building.x, building.y];
-                 });
-  this.randomTarget = this.targetPositions[Math.floor(Math.random() * 
-                                   this.targets.length)];
-  this.xf = this.randomTarget[0];
-  this.yf = this.randomTarget[1];
+  this.targets = batteries.concat(cities);
+  this.randomTarget = this.targets[Math.floor(Math.random() * 
+                                              this.targets.length)];
+  this.xf = this.randomTarget.x;
+  this.yf = this.randomTarget.y;
   this.xDiff = this.x - this.xf;
   this.yDiff = this.y - this.yf;
   this.angleRad = Math.atan(this.yDiff / this.xDiff);
@@ -256,14 +253,12 @@ var EnemyMissile = function() {
     }
   };
   this.collide = function() {
-    this.targets.forEach(function(building) {
-      if (this.x >= building.x - building.width/2 &&
-          this.x <= building.x + building.width/2 &&
-          this.y >= building.y - building.height/2) {
-        this.explode();
-        return false;
-      }
-    }.bind(this));
+    if (this.x >= this.xf - this.randomTarget.width / 2 &&
+        this.x <= this.xf + this.randomTarget.width / 2 &&
+        this.y >= this.yf - this.randomTarget.height / 2) {
+      this.explode();
+      this.randomTarget.destroy();
+    }
   };
 };
 
@@ -278,7 +273,7 @@ var Explosion = function(x, y) {
   this.y = y;
   this.explodeSpeed = 0.5;
   this.radius = 3;
-  this.explosionSize = 25;
+  this.explosionSize = 30;
   this.grow = true;
   this.shrink = false;
   this.draw = function() {
