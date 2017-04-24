@@ -126,14 +126,36 @@ var doMouseDown = function(event) {
   var battery;
   if (canvasY <= CANVAS_HEIGHT - 70) {
     if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
-      battery = 0;
-    } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
-      battery = 1;
+      battery = findCorrectBattery(0, 1, 2);
+    } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= CANVAS_WIDTH / 2) {
+      battery = findCorrectBattery(1, 0, 2);
+    } else if (CANVAS_WIDTH/2 < canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
+      battery = findCorrectBattery(1, 2, 0);
     } else {
-      battery = 2;
+      battery = findCorrectBattery(2, 1, 0);
     }
-    counterMissiles.push(new CounterMissile(batteries[battery]));
+    if (battery >= 0) {
+      counterMissiles.push(new CounterMissile(batteries[battery]));
+    }
   }
+};
+
+
+// Helper function for doMouseDown that returns the correct battery to shoot
+// from given the choices of batteries to choose from (in order)
+
+var findCorrectBattery = function(first, second, third) {
+  var battery;
+  if (batteries[first].active) {
+    battery = first;
+  } else if (batteries[second].active) {
+    battery = second;
+  } else if (batteries[third].active) {
+    battery = third;
+  } else {
+    battery = -1;
+  }
+  return battery;
 };
 
 
