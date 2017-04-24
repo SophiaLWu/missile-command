@@ -299,10 +299,16 @@ var Explosion = function(x, y) {
   this.grow = true;
   this.shrink = false;
   this.draw = function() {
-    ctx.fillStyle = "orange";
+    var gradient = ctx.createRadialGradient(this.x,this.y,5,
+                                            this.x,this.y,this.radius);
+    gradient.addColorStop(0, "yellow");
+    gradient.addColorStop(1, "orange");
     ctx.beginPath();
     ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+    ctx.fillStyle = gradient;
     ctx.fill();
+    // ctx.strokeStyle = "#fff";
+    // ctx.stroke();
     ctx.closePath();
   };
   this.update = function() {
