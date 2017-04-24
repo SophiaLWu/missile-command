@@ -121,8 +121,9 @@ var handleCollisions = function() {
 // Mouseclick event
 
 var doMouseDown = function(event) {
-  canvasX = event.pageX;
-  canvasY = event.pageY;
+  var rect = canvas.getBoundingClientRect();
+  canvasX = event.clientX - rect.left;
+  canvasY = event.clientY - rect.top;
   var battery;
   if (canvasY <= CANVAS_HEIGHT - 70) {
     if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
