@@ -275,11 +275,17 @@ var EnemyMissile = function() {
     }
   };
   this.collide = function() {
-    if (this.x >= this.xf - this.randomTarget.width / 2 &&
-        this.x <= this.xf + this.randomTarget.width / 2 &&
-        this.y >= this.yf - this.randomTarget.height / 2) {
-      this.explode();
-      this.randomTarget.destroy();
+    if (this.randomTarget.active) {
+      if (this.x >= this.xf - this.randomTarget.width / 2 &&
+          this.x <= this.xf + this.randomTarget.width / 2 &&
+          this.y >= this.yf - this.randomTarget.height / 2) {
+        this.explode();
+        this.randomTarget.destroy();
+      }
+    } else {
+      if (this.y >= CANVAS_HEIGHT - 35) {
+        this.explode();
+      }
     }
   };
 };
@@ -307,8 +313,6 @@ var Explosion = function(x, y) {
     ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
     ctx.fillStyle = gradient;
     ctx.fill();
-    // ctx.strokeStyle = "#fff";
-    // ctx.stroke();
     ctx.closePath();
   };
   this.update = function() {
