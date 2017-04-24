@@ -230,7 +230,7 @@ var Missile = function() {
 var CounterMissile = function(battery) {
   Missile.call(this);
   this.xi = battery.x;
-  this.yi = battery.y;
+  this.yi = battery.y - battery.height / 2;
   this.x = this.xi
   this.y = this.yi
   this.xf = canvasX;
