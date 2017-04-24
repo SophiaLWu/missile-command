@@ -1,6 +1,5 @@
 
 // Variables and constants
-
 var CANVAS_WIDTH = 800;
 var CANVAS_HEIGHT = 500;
 var FPS = 30;
@@ -17,7 +16,6 @@ var explosions = [];
 
 
 // Initial canvas setup
-
 var init = function() {
   var canvasElement = $("<canvas id='canvas' width='" + CANVAS_WIDTH + 
                         "' height='" + CANVAS_HEIGHT + "'></canvas>");
@@ -28,7 +26,6 @@ var init = function() {
 
 
 // Draw the canvas
-
 var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
@@ -39,31 +36,44 @@ var draw = function() {
   cities.forEach(function(city) {
     if (city.active) city.draw("brown");
   });
-  counterMissiles.forEach(function(counterMissile) {
-    if (counterMissile.active) counterMissile.draw("green");
-  });
-  enemyMissiles.forEach(function(enemyMissile) {
-    if (enemyMissile.active) enemyMissile.draw("red");
-  });
-  explosions.forEach(function(explosion) {
-    explosion.draw();
-  });
+  if (game.start) {
+    game.drawTitleScreen();
+  } else {
+    counterMissiles.forEach(function(counterMissile) {
+      if (counterMissile.active) counterMissile.draw("green");
+    });
+    enemyMissiles.forEach(function(enemyMissile) {
+      if (enemyMissile.active) enemyMissile.draw("red");
+    });
+    explosions.forEach(function(explosion) {
+      explosion.draw();
+    });
+  }
 };
 
 
 // Update canvas
-
 var update = function() {
-  canvas.addEventListener("mousedown", doMouseDown, false);
-  counterMissiles.forEach(function(counterMissile) {
-    counterMissile.update();
-  });
-  enemyMissiles.forEach(function(enemyMissile) {
-    enemyMissile.update();
-  });
-  explosions.forEach(function(explosion) {
-    explosion.update();
-  });
+  if (game.start) {
+    canvas.addEventListener("mousedown", startGame, false);
+  } else {
+    canvas.addEventListener("mousedown", fireMissile, false);
+    counterMissiles.forEach(function(counterMissile) {
+      counterMissile.update();
+    });
+    enemyMissiles.forEach(function(enemyMissile) {
+      enemyMissile.update();
+    });
+    explosions.forEach(function(explosion) {
+      explosion.update();
+    });
+  }
+};
+
+
+// Start game mouse click event
+var startGame = function() {
+  game.start = false;
 };
 
 
@@ -73,31 +83,29 @@ var drawEnvironment = function() {
   ctx.fillRect(0, CANVAS_HEIGHT - 35, CANVAS_WIDTH, 35);
 };
 
-// Create batteries
 
+// Create batteries
 var createBatteries = function() {
   batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
-                 new Battery(CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50),
+                 new Battery(CANVAS_WIDTH/2, CANVAS_HEIGHT - 50),
                  new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
 };
 
 
 // Create cities
-
 var createCities = function() {
-  var oneFourthD = (CANVAS_WIDTH / 2 - 20) / 4;
+  var oneFourthD = (CANVAS_WIDTH/2 - 20) / 4;
   cities.push(new City(20 + oneFourthD, CANVAS_HEIGHT - 50),
               new City(20 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
               new City(20 + 3 * oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH / 2 + oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH / 2 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH / 2 + 3 * oneFourthD, CANVAS_HEIGHT - 50));
+              new City(CANVAS_WIDTH/2 + oneFourthD, CANVAS_HEIGHT - 50),
+              new City(CANVAS_WIDTH/2 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
+              new City(CANVAS_WIDTH/2 + 3 * oneFourthD, CANVAS_HEIGHT - 50));
 
 };
 
 
 // Add random enemy missiles
-
 var addEnemyMissiles = function() {
   if (tick % 30 == 0 && enemyMissiles.length < 10) {
     enemyMissiles.push(new EnemyMissile);
@@ -107,7 +115,6 @@ var addEnemyMissiles = function() {
 
 // Handles collision of enemy missiles with buildings and counter missiles
 // with enemy missiles
-
 var handleCollisions = function() {
   enemyMissiles.forEach(function(missile) {
     if (missile.active) missile.collide();
@@ -118,19 +125,18 @@ var handleCollisions = function() {
 };
 
 
-// Mouseclick event
-
-var doMouseDown = function(event) {
+// Fire missile mouse click event
+var fireMissile = function(event) {
   var rect = canvas.getBoundingClientRect();
   canvasX = event.clientX - rect.left;
   canvasY = event.clientY - rect.top;
   var battery;
   if (canvasY <= CANVAS_HEIGHT - 70) {
-    if (0 <= canvasX && canvasX < CANVAS_WIDTH / 4) {
+    if (0 <= canvasX && canvasX < CANVAS_WIDTH/4) {
       battery = findCorrectBattery(0, 1, 2);
-    } else if (CANVAS_WIDTH / 4 <= canvasX && canvasX <= CANVAS_WIDTH / 2) {
+    } else if (CANVAS_WIDTH/4 <= canvasX && canvasX <= CANVAS_WIDTH/2) {
       battery = findCorrectBattery(1, 0, 2);
-    } else if (CANVAS_WIDTH/2 < canvasX && canvasX <= 3 * CANVAS_WIDTH / 4) {
+    } else if (CANVAS_WIDTH/2 < canvasX && canvasX <= 3 * CANVAS_WIDTH/4) {
       battery = findCorrectBattery(1, 2, 0);
     } else {
       battery = findCorrectBattery(2, 1, 0);
@@ -144,7 +150,6 @@ var doMouseDown = function(event) {
 
 // Helper function for doMouseDown that returns the correct battery to shoot
 // from given the choices of batteries to choose from (in order)
-
 var findCorrectBattery = function(first, second, third) {
   var battery;
   if (batteries[first].active) {
@@ -160,8 +165,22 @@ var findCorrectBattery = function(first, second, third) {
 };
 
 
-// Building class
+// Game class
+var Game = function() {
+  this.start = true;
+  this.drawTitleScreen = function() {
+    ctx.font = "100px Rationale";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Missile Command", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
+    ctx.font = "40px Rationale";
+    ctx.fillText("Click to play", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
+  };
+};
 
+
+// Building class
 var Building = function(x, y) {
   this.active = true;
   this.width = 30;
@@ -178,7 +197,6 @@ var Building = function(x, y) {
 
 
 // Battery class
-
 var Battery = function(x, y) {
   Building.call(this);
   this.x = x;
@@ -189,7 +207,6 @@ Battery.prototype = Object.create(Building.prototype);
 
 
 // City class
-
 var City = function(x, y) {
   Building.call(this);
   this.x = x;
@@ -201,7 +218,6 @@ City.prototype = Object.create(Building.prototype);
 
 
 // General Missile class
-
 var Missile = function() {
   this.active = true;
   this.width = 6;
@@ -227,11 +243,10 @@ var Missile = function() {
 
 
 // Counter Missile class
-
 var CounterMissile = function(battery) {
   Missile.call(this);
   this.xi = battery.x;
-  this.yi = battery.y - battery.height / 2;
+  this.yi = battery.y - battery.height/2;
   this.x = this.xi
   this.y = this.yi
   this.xf = canvasX;
@@ -259,7 +274,6 @@ CounterMissile.prototype = Object.create(Missile.prototype);
 
 
 // Enemy Missile class
-
 var EnemyMissile = function() {
   Missile.call(this);
   this.xi = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
@@ -288,9 +302,9 @@ var EnemyMissile = function() {
   };
   this.collide = function() {
     if (this.randomTarget.active) {
-      if (this.x >= this.xf - this.randomTarget.width / 2 &&
-          this.x <= this.xf + this.randomTarget.width / 2 &&
-          this.y >= this.yf - this.randomTarget.height / 2) {
+      if (this.x >= this.xf - this.randomTarget.width/2 &&
+          this.x <= this.xf + this.randomTarget.width/2 &&
+          this.y >= this.yf - this.randomTarget.height/2) {
         this.explode();
         this.randomTarget.destroy();
       }
@@ -306,7 +320,6 @@ EnemyMissile.prototype = Object.create(Missile.prototype);
 
 
 // Explosion class
-
 var Explosion = function(x, y) {
   this.active = true;
   this.x = x;
@@ -346,8 +359,8 @@ var Explosion = function(x, y) {
     enemyMissiles.filter(function(missile) {
       return missile.active;
     }).forEach(function(missile) {
-        var xdiff = Math.abs((missile.x - missile.width / 2) - this.x);
-        var ydiff = Math.abs((missile.y - missile.height / 2) - this.y);
+        var xdiff = Math.abs((missile.x - missile.width/2) - this.x);
+        var ydiff = Math.abs((missile.y - missile.height/2) - this.y);
         var distance = Math.sqrt(xdiff * xdiff + ydiff * ydiff);
         if (distance <= this.radius) {
           missile.explode();
@@ -358,8 +371,8 @@ var Explosion = function(x, y) {
 
 
 // Game execution
-
 init();
+game = new Game;
 createBatteries();
 createCities();
 
