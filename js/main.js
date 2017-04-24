@@ -206,6 +206,7 @@ var Missile = function() {
   this.width = 6;
   this.height = 6;
   this.velocity = 5;
+  this.streakWidth = 2;
   this.explode = function() {
     this.active = false;
     explosions.push(new Explosion(this.x, this.y));
@@ -214,6 +215,12 @@ var Missile = function() {
     ctx.fillStyle = color;
     ctx.fillRect(this.x - this.width/2,this.y - this.height/2,
                  this.width,this.height);
+    ctx.beginPath();
+    ctx.moveTo(this.xi, this.yi);
+    ctx.lineTo(this.x, this.y);
+    ctx.lineWidth = this.streakWidth;
+    ctx.strokeStyle = color;
+    ctx.stroke();
   };
 };
 
@@ -222,8 +229,10 @@ var Missile = function() {
 
 var CounterMissile = function(battery) {
   Missile.call(this);
-  this.x = battery.x;
-  this.y = battery.y;
+  this.xi = battery.x;
+  this.yi = battery.y;
+  this.x = this.xi
+  this.y = this.yi
   this.xf = canvasX;
   this.yf = canvasY;
   this.xDiff = this.x - this.xf;
@@ -252,8 +261,10 @@ CounterMissile.prototype = Object.create(Missile.prototype);
 
 var EnemyMissile = function() {
   Missile.call(this);
-  this.x = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
-  this.y = 0;
+  this.xi = Math.floor(Math.random() * (CANVAS_WIDTH + 1));
+  this.yi = 0;
+  this.x = this.xi
+  this.y = this.yi
   this.velocity = 2;
   this.targets = batteries.concat(cities);
   this.randomTarget = this.targets[Math.floor(Math.random() * 
