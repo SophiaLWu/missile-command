@@ -42,7 +42,7 @@ var draw = function() {
       explosion.draw();
     });
   }
-  drawEnvironment();
+  game.drawEnvironment();
   batteries.forEach(function(battery) {
     if (battery.active) battery.draw("yellow");
   });
@@ -74,54 +74,6 @@ var update = function() {
 // Start game mouse click event
 var startGame = function() {
   game.start = false;
-};
-
-
-// Draw environment
-var drawEnvironment = function() {
-  ctx.fillStyle = "yellow";
-  ctx.fillRect(0, CANVAS_HEIGHT - 35, CANVAS_WIDTH, 35);
-};
-
-
-// Create batteries
-var createBatteries = function() {
-  batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
-                 new Battery(CANVAS_WIDTH/2, CANVAS_HEIGHT - 50),
-                 new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
-};
-
-
-// Create cities
-var createCities = function() {
-  var oneFourthD = (CANVAS_WIDTH/2 - 20) / 4;
-  cities.push(new City(20 + oneFourthD, CANVAS_HEIGHT - 50),
-              new City(20 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
-              new City(20 + 3 * oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH/2 + oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH/2 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
-              new City(CANVAS_WIDTH/2 + 3 * oneFourthD, CANVAS_HEIGHT - 50));
-
-};
-
-
-// Add random enemy missiles
-var addEnemyMissiles = function() {
-  if (tick % 30 == 0 && enemyMissiles.length < 10) {
-    enemyMissiles.push(new EnemyMissile);
-  }
-};
-
-
-// Handles collision of enemy missiles with buildings and counter missiles
-// with enemy missiles
-var handleCollisions = function() {
-  enemyMissiles.forEach(function(missile) {
-    if (missile.active) missile.collide();
-  });
-  explosions.forEach(function(explosion) {
-    if (explosion.active) explosion.collide();
-  });
 };
 
 
@@ -168,6 +120,9 @@ var findCorrectBattery = function(first, second, third) {
 // Game class
 var Game = function() {
   this.start = true;
+  this.maxMissiles = 8;
+  this.tickToAddMissiles = 200;
+  this.missilesPerAddition = 4;
   this.drawTitleScreen = function() {
     ctx.font = "100px Rationale";
     ctx.fillStyle = "#fff";
@@ -176,6 +131,41 @@ var Game = function() {
     ctx.fillText("Missile Command", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
     ctx.font = "40px Rationale";
     ctx.fillText("click to play", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
+  };
+  this.drawEnvironment = function() {
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(0, CANVAS_HEIGHT - 35, CANVAS_WIDTH, 35);
+  };
+  this.addEnemyMissiles = function() {
+    if ((tick === 0 || tick % this.tickToAddMissiles == 0) && 
+        enemyMissiles.length < this.maxMissiles) {
+      for (var i = 0; i < this.missilesPerAddition; i++) {
+        enemyMissiles.push(new EnemyMissile);
+      }
+    }
+  };
+  this.createBatteries = function() {
+    batteries.push(new Battery(20, CANVAS_HEIGHT - 50),
+                   new Battery(CANVAS_WIDTH/2, CANVAS_HEIGHT - 50),
+                   new Battery(CANVAS_WIDTH - 20, CANVAS_HEIGHT - 50))
+  };
+  this.createCities = function() {
+    var oneFourthD = (CANVAS_WIDTH/2 - 20) / 4;
+    cities.push(new City(20 + oneFourthD, CANVAS_HEIGHT - 50),
+                new City(20 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
+                new City(20 + 3 * oneFourthD, CANVAS_HEIGHT - 50),
+                new City(CANVAS_WIDTH/2 + oneFourthD, CANVAS_HEIGHT - 50),
+                new City(CANVAS_WIDTH/2 + 2 * oneFourthD, CANVAS_HEIGHT - 50),
+                new City(CANVAS_WIDTH/2 + 3 * oneFourthD, CANVAS_HEIGHT - 50));
+
+  };
+  this.handleCollisions = function() {
+    enemyMissiles.forEach(function(missile) {
+      if (missile.active) missile.collide();
+    });
+    explosions.forEach(function(explosion) {
+      if (explosion.active) explosion.collide();
+    });
   };
 };
 
@@ -374,14 +364,14 @@ var Explosion = function(x, y) {
 // Game execution
 init();
 game = new Game;
-createBatteries();
-createCities();
+game.createBatteries();
+game.createCities();
 
 setInterval(function() {
-  tick += 1;
-  addEnemyMissiles();
-  handleCollisions();
+  game.addEnemyMissiles();
+  game.handleCollisions();
   update();
   draw();
+  tick += 1;
 }, 1000/FPS);
 
