@@ -109,11 +109,15 @@ var addEnemyMissiles = function() {
 };
 
 
-// Handles collision of enemy missiles with buildings
+// Handles collision of enemy missiles with buildings and counter missiles
+// with enemy missiles
 
 var handleCollisions = function() {
   enemyMissiles.forEach(function(missile) {
-    if (missile.active && missile.collide()) missile.explode();
+    if (missile.active) missile.collide();
+  });
+  explosions.forEach(function(explosion) {
+    if (explosion.active) explosion.collide();
   });
 };
 
@@ -203,6 +207,7 @@ var CounterMissile = function(battery) {
   this.xDiff = this.x - this.xf;
   this.yDiff = this.y - this.yf;
   this.angleRad = Math.atan(this.yDiff / this.xDiff);
+  this.velocity = 10;
   this.update = function() {
     if (this.active) {
       if (this.angleRad < 0) {
@@ -251,16 +256,14 @@ var EnemyMissile = function() {
     }
   };
   this.collide = function() {
-    var collided = false;
     this.targets.forEach(function(building) {
       if (this.x >= building.x - building.width/2 &&
           this.x <= building.x + building.width/2 &&
           this.y >= building.y - building.height/2) {
-        collided = true;
+        this.explode();
         return false;
       }
     }.bind(this));
-    return collided;
   };
 };
 
@@ -270,9 +273,10 @@ EnemyMissile.prototype = Object.create(Missile.prototype);
 // Explosion class
 
 var Explosion = function(x, y) {
+  this.active = true;
   this.x = x;
   this.y = y;
-  this.explodeSpeed = 1;
+  this.explodeSpeed = 0.5;
   this.radius = 3;
   this.explosionSize = 25;
   this.grow = true;
@@ -296,7 +300,20 @@ var Explosion = function(x, y) {
     }
     else if (this.shrink && this.radius === 0) {
       this.shrink = false;
+      this.active = false;
     }
+  };
+  this.collide = function() {
+    enemyMissiles.filter(function(missile) {
+      return missile.active;
+    }).forEach(function(missile) {
+        var xdiff = Math.abs((missile.x - missile.width / 2) - this.x);
+        var ydiff = Math.abs((missile.y - missile.height / 2) - this.y);
+        var distance = Math.sqrt(xdiff * xdiff + ydiff * ydiff);
+        if (distance <= this.radius) {
+          missile.explode();
+        }
+      }.bind(this));
   };
 };
 
