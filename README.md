@@ -9,4 +9,3 @@ This is a project as described in [The Odin Project](http://www.theodinproject.c
 - Make the missiles, explosions, buildings look nicer (maybe some images?)
 - Add a scoring system
 - Add levels
-- Add beginning title screen

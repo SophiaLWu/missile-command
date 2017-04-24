@@ -1,7 +1,7 @@
 
 // Variables and constants
 var CANVAS_WIDTH = 800;
-var CANVAS_HEIGHT = 500;
+var CANVAS_HEIGHT = 600;
 var FPS = 30;
 var canvas;
 var ctx;
@@ -29,13 +29,6 @@ var init = function() {
 var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-  drawEnvironment();
-  batteries.forEach(function(battery) {
-    if (battery.active) battery.draw("yellow");
-  });
-  cities.forEach(function(city) {
-    if (city.active) city.draw("brown");
-  });
   if (game.start) {
     game.drawTitleScreen();
   } else {
@@ -49,6 +42,13 @@ var draw = function() {
       explosion.draw();
     });
   }
+  drawEnvironment();
+  batteries.forEach(function(battery) {
+    if (battery.active) battery.draw("yellow");
+  });
+  cities.forEach(function(city) {
+    if (city.active) city.draw("brown");
+  });
 };
 
 
@@ -175,7 +175,7 @@ var Game = function() {
     ctx.textBaseline = "middle";
     ctx.fillText("Missile Command", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
     ctx.font = "40px Rationale";
-    ctx.fillText("Click to play", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
+    ctx.fillText("click to play", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
   };
 };
 
@@ -201,6 +201,7 @@ var Battery = function(x, y) {
   Building.call(this);
   this.x = x;
   this.y = y;
+  this.height = 60;
 };
 
 Battery.prototype = Object.create(Building.prototype);
