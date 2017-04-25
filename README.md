@@ -5,7 +5,7 @@ This is a project as described in [The Odin Project](http://www.theodinproject.c
 
 [Play the game!](https://sophialwu.github.io/missile-command/)
 
-# Game Instructions
+## Game Instructions
 The player has six cities that must be defended from enemy missiles. The player can launch counter-missiles from one of three batteries by clicking on a location. The counter-missiles explode upon reaching that location, leaving behind a fireball that can destroy any enemy missile that enters it. Enemy missiles can target both cites and batteries.
 
 Each battery only can shoot ten counter-missiles. When one battery runs out of missiles, the next closest battery will take over.
