@@ -29,46 +29,52 @@ var init = function() {
 var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
-  if (game.start) {
-    game.drawLevelScreen();
-    counterMissiles.forEach(function(counterMissile) {
-      if (counterMissile.active) counterMissile.draw("green");
-    });
-    enemyMissiles.forEach(function(enemyMissile) {
-      if (enemyMissile.active) enemyMissile.draw("red");
-    });
-    explosions.forEach(function(explosion) {
-      explosion.draw();
-    });
+  if (game.gameover) {
+    game.drawGameoverScreen();
   } else {
-    game.drawTitleScreen();
+    if (game.start) {
+      game.drawLevelScreen();
+      counterMissiles.forEach(function(counterMissile) {
+        if (counterMissile.active) counterMissile.draw("green");
+      });
+      enemyMissiles.forEach(function(enemyMissile) {
+        if (enemyMissile.active) enemyMissile.draw("red");
+      });
+      explosions.forEach(function(explosion) {
+        explosion.draw();
+      });
+    } else  {
+      game.drawTitleScreen();
+    }
+    batteries.forEach(function(battery) {
+      if (battery.active) battery.draw("yellow");
+    });
+    cities.forEach(function(city) {
+      if (city.active) city.draw("brown");
+    });
   }
   game.drawEnvironment();
-  batteries.forEach(function(battery) {
-    if (battery.active) battery.draw("yellow");
-  });
-  cities.forEach(function(city) {
-    if (city.active) city.draw("brown");
-  });
 };
 
 
 // Update canvas
 var update = function() {
-  if (game.start) {
-    canvas.addEventListener("mousedown", fireMissile, false);
-    counterMissiles.forEach(function(counterMissile) {
-      counterMissile.update();
-    });
-    enemyMissiles.forEach(function(enemyMissile) {
-      enemyMissile.update();
-    });
-    explosions.forEach(function(explosion) {
-      explosion.update();
-    });
-    if (game.completeLevel) game.startNextLevel();
-  } else {
-    canvas.addEventListener("mousedown", startGame, false);
+  if (!game.gameover) {
+    if (game.start) {
+      canvas.addEventListener("mousedown", fireMissile, false);
+      counterMissiles.forEach(function(counterMissile) {
+        counterMissile.update();
+      });
+      enemyMissiles.forEach(function(enemyMissile) {
+        enemyMissile.update();
+      });
+      explosions.forEach(function(explosion) {
+        explosion.update();
+      });
+      if (game.completeLevel) game.startNextLevel();
+    } else {
+      canvas.addEventListener("mousedown", startGame, false);
+    }
   }
 };
 
@@ -128,6 +134,7 @@ var Game = function() {
   this.tickToAddMissiles = 200;
   this.missilesPerAddition = 4;
   this.maxMissiles = 4;
+  this.gameover = false;
   this.drawTitleScreen = function() {
     ctx.font = "100px Rationale";
     ctx.fillStyle = "#fff";
@@ -145,6 +152,13 @@ var Game = function() {
       ctx.textBaseline = "middle";
       ctx.fillText("Level " + this.level, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
     }
+  }
+  this.drawGameoverScreen = function() {
+    ctx.font = "100px Rationale";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("GAMEOVER", CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
   }
   this.drawEnvironment = function() {
     ctx.fillStyle = "yellow";
@@ -217,6 +231,12 @@ var Game = function() {
       this.tickToAddMissiles -= 15;
       this.maxMissiles = this.level * this.missilesPerAddition;
     }
+  };
+  this.checkGameover = function() {
+    var activeBuildings = cities.concat(batteries).filter(function(building) {
+      return building.active;
+    });
+    if (activeBuildings.length === 0) this.gameover = true;
   };
 };
 
@@ -419,10 +439,13 @@ game.createBatteries();
 game.createCities();
 
 setInterval(function() {
-  tick += 1;
-  game.handleCollisions();
-  game.addEnemyMissiles();
-  game.checkCompleteLevel();
+  if (!game.gameover) {
+    tick += 1;
+    game.handleCollisions();
+    game.addEnemyMissiles();
+    game.checkCompleteLevel();
+    game.checkGameover();
+  }
   draw();
   update();
 }, 1000/FPS);
