@@ -55,12 +55,16 @@ var draw = function() {
   }
   game.drawEnvironment();
 };
-
-
 // Update canvas
 var update = function() {
-  if (!game.gameover) {
+  if (game.gameover) {
+    canvas.removeEventListener("mousedown", fireMissile, false);
+    canvas.removeEventListener("mousedown", startGame, false);
+    canvas.addEventListener("mousedown", restartGame, false);
+  } else {
     if (game.start) {
+      canvas.removeEventListener("mousedown", startGame, false);
+      canvas.removeEventListener("mousedown", restartGame, false);
       canvas.addEventListener("mousedown", fireMissile, false);
       counterMissiles.forEach(function(counterMissile) {
         counterMissile.update();
@@ -73,6 +77,8 @@ var update = function() {
       });
       if (game.completeLevel) game.startNextLevel();
     } else {
+      canvas.removeEventListener("mousedown", fireMissile, false);
+      canvas.removeEventListener("mousedown", restartGame, false);
       canvas.addEventListener("mousedown", startGame, false);
     }
   }
@@ -81,7 +87,14 @@ var update = function() {
 
 // Start game mouse click event
 var startGame = function() {
+  console.log('here');
   game.start = true;
+};
+
+
+// Restart game mouse click event
+var restartGame = function() {
+  game.restartGame();
 };
 
 
@@ -158,7 +171,9 @@ var Game = function() {
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("GAMEOVER", CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+    ctx.fillText("GAMEOVER", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
+    ctx.font = "40px Rationale";
+    ctx.fillText("click to restart", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
   }
   this.drawEnvironment = function() {
     ctx.fillStyle = "yellow";
@@ -237,6 +252,17 @@ var Game = function() {
       return building.active;
     });
     if (activeBuildings.length === 0) this.gameover = true;
+  };
+  this.restartGame = function() {
+    this.level = 1;
+    this.completeLevel = false;
+    this.tickToAddMissiles = 200;
+    this.missilesPerAddition = 4;
+    this.maxMissiles = 4;
+    this.gameover = false;
+    this.resetValues();
+    this.createBatteries();
+    this.createCities();
   };
 };
 
@@ -436,7 +462,7 @@ var Explosion = function(x, y) {
 
 // Game execution
 init();
-game = new Game;
+var game = new Game;
 game.createBatteries();
 game.createCities();
 
