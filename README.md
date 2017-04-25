@@ -7,4 +7,4 @@ This is a project as described in [The Odin Project](http://www.theodinproject.c
 - Add functionality of limited number of missiles from each battery
 - Make the missiles, explosions, buildings look nicer (maybe some images?)
 - Add a scoring system
-- Add pause and restart functionality
+- Add pause and restart functionality during the game

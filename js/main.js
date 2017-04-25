@@ -47,7 +47,10 @@ var draw = function() {
       game.drawTitleScreen();
     }
     batteries.forEach(function(battery) {
-      if (battery.active) battery.draw("yellow");
+      if (battery.active) {
+        battery.draw("yellow");
+        battery.drawAvailableMissiles();
+      }
     });
     cities.forEach(function(city) {
       if (city.active) city.draw("brown");
@@ -103,19 +106,23 @@ var fireMissile = function(event) {
   var rect = canvas.getBoundingClientRect();
   canvasX = event.clientX - rect.left;
   canvasY = event.clientY - rect.top;
-  var battery;
+  var whichBattery;
   if (canvasY <= CANVAS_HEIGHT - 70) {
     if (0 <= canvasX && canvasX < CANVAS_WIDTH/4) {
-      battery = findCorrectBattery(0, 1, 2);
+      whichBattery = findCorrectBattery(0, 1, 2);
     } else if (CANVAS_WIDTH/4 <= canvasX && canvasX <= CANVAS_WIDTH/2) {
-      battery = findCorrectBattery(1, 0, 2);
+      whichBattery = findCorrectBattery(1, 0, 2);
     } else if (CANVAS_WIDTH/2 < canvasX && canvasX <= 3 * CANVAS_WIDTH/4) {
-      battery = findCorrectBattery(1, 2, 0);
+      whichBattery = findCorrectBattery(1, 2, 0);
     } else {
-      battery = findCorrectBattery(2, 1, 0);
+      whichBattery = findCorrectBattery(2, 1, 0);
     }
-    if (battery >= 0) {
-      counterMissiles.push(new CounterMissile(batteries[battery]));
+    if (whichBattery >= 0) {
+      var battery = batteries[whichBattery];
+      if (battery.missiles > 0) {
+        battery.missiles -= 1;
+        counterMissiles.push(new CounterMissile(battery));
+      } 
     }
   }
 };
@@ -125,11 +132,11 @@ var fireMissile = function(event) {
 // from given the choices of batteries to choose from (in order)
 var findCorrectBattery = function(first, second, third) {
   var battery;
-  if (batteries[first].active) {
+  if (batteries[first].active && batteries[first].missiles > 0) {
     battery = first;
-  } else if (batteries[second].active) {
+  } else if (batteries[second].active && batteries[second].missiles > 0) {
     battery = second;
-  } else if (batteries[third].active) {
+  } else if (batteries[third].active && batteries[third].missiles > 0) {
     battery = third;
   } else {
     battery = -1;
@@ -289,6 +296,28 @@ var Battery = function(x, y) {
   this.x = x;
   this.y = y;
   this.height = 60;
+  this.missiles = 10;
+  this.drawAvailableMissiles = function() {
+    ctx.font = "20px Rationale";
+    ctx.fillStyle = "green";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(this.missiles, this.x, this.y - 15);
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y - 5);
+    ctx.lineTo(this.x, this.y + 5);
+    ctx.strokeStyle = "green";
+    ctx.stroke();
+    ctx.moveTo(this.x - 4, this.y + 5);
+    ctx.lineTo(this.x + 4, this.y + 5);
+    ctx.stroke();
+    ctx.moveTo(this.x - 4, this.y + 5);
+    ctx.lineTo(this.x - 4, this.y + 10);
+    ctx.stroke();
+    ctx.moveTo(this.x + 4, this.y + 5);
+    ctx.lineTo(this.x + 4, this.y + 10);
+    ctx.stroke();
+  };
 };
 
 Battery.prototype = Object.create(Building.prototype);
