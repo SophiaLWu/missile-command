@@ -343,7 +343,9 @@ var EnemyMissile = function() {
   this.x = this.xi
   this.y = this.yi
   this.velocity = 2;
-  this.targets = batteries.concat(cities);
+  this.targets = batteries.concat(cities).filter(function(building) {
+    return building.active;
+  });
   this.randomTarget = this.targets[Math.floor(Math.random() * 
                                               this.targets.length)];
   this.xf = this.randomTarget.x;
