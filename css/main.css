@@ -1,6 +1,26 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+body {
+  background: #47494c;
+}
+
+small {
+  color: #fff;
+  font-size: 10px;
+}
+
 #canvas {
   display: block;
   width: 800px;
   margin: 0 auto;
-  margin-top: 50px;
+  margin-top: 30px;
+}
+
+footer {
+  margin-top: 30px;
+  text-align: center;
 }
