@@ -30,8 +30,7 @@ var draw = function() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
   if (game.start) {
-    game.drawTitleScreen();
-  } else {
+    game.drawLevelScreen();
     counterMissiles.forEach(function(counterMissile) {
       if (counterMissile.active) counterMissile.draw("green");
     });
@@ -41,6 +40,8 @@ var draw = function() {
     explosions.forEach(function(explosion) {
       explosion.draw();
     });
+  } else {
+    game.drawTitleScreen();
   }
   game.drawEnvironment();
   batteries.forEach(function(battery) {
@@ -55,8 +56,6 @@ var draw = function() {
 // Update canvas
 var update = function() {
   if (game.start) {
-    canvas.addEventListener("mousedown", startGame, false);
-  } else {
     canvas.addEventListener("mousedown", fireMissile, false);
     counterMissiles.forEach(function(counterMissile) {
       counterMissile.update();
@@ -67,13 +66,16 @@ var update = function() {
     explosions.forEach(function(explosion) {
       explosion.update();
     });
+    if (game.completeLevel) game.startNextLevel();
+  } else {
+    canvas.addEventListener("mousedown", startGame, false);
   }
 };
 
 
 // Start game mouse click event
 var startGame = function() {
-  game.start = false;
+  game.start = true;
 };
 
 
@@ -100,7 +102,7 @@ var fireMissile = function(event) {
 };
 
 
-// Helper function for doMouseDown that returns the correct battery to shoot
+// Helper function for fireMissile that returns the correct battery to shoot
 // from given the choices of batteries to choose from (in order)
 var findCorrectBattery = function(first, second, third) {
   var battery;
@@ -119,10 +121,13 @@ var findCorrectBattery = function(first, second, third) {
 
 // Game class
 var Game = function() {
-  this.start = true;
-  this.maxMissiles = 8;
+  this.start = false;
+  this.level = 1;
+  this.completeLevel = false;
+  this.levelDelay = 75;
   this.tickToAddMissiles = 200;
   this.missilesPerAddition = 4;
+  this.maxMissiles = 4;
   this.drawTitleScreen = function() {
     ctx.font = "100px Rationale";
     ctx.fillStyle = "#fff";
@@ -132,12 +137,22 @@ var Game = function() {
     ctx.font = "40px Rationale";
     ctx.fillText("click to play", CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 50);
   };
+  this.drawLevelScreen = function() {
+    if (tick <= this.levelDelay) {
+      ctx.font = "50px Rationale";
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Level " + this.level, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+    }
+  }
   this.drawEnvironment = function() {
     ctx.fillStyle = "yellow";
     ctx.fillRect(0, CANVAS_HEIGHT - 35, CANVAS_WIDTH, 35);
   };
   this.addEnemyMissiles = function() {
-    if ((tick === 0 || tick % this.tickToAddMissiles == 0) && 
+    if ((tick === this.levelDelay || 
+         tick % (this.levelDelay + this.tickToAddMissiles) === 0) &&
         enemyMissiles.length < this.maxMissiles) {
       for (var i = 0; i < this.missilesPerAddition; i++) {
         enemyMissiles.push(new EnemyMissile);
@@ -166,6 +181,42 @@ var Game = function() {
     explosions.forEach(function(explosion) {
       if (explosion.active) explosion.collide();
     });
+  };
+  this.checkCompleteLevel = function() {
+    if (enemyMissiles.length === this.maxMissiles) {
+      var activeEnemyMissiles = enemyMissiles.filter(function(missile) {
+        return missile.active;
+      });
+      var activeExplosions = explosions.filter(function(explosion) {
+        return explosion.active;
+      });
+      if (activeEnemyMissiles.length === 0 && activeExplosions.length === 0) {
+        this.completeLevel = true;
+      }
+    }
+  };
+  this.resetValues = function() {
+    tick = 0;
+    batteries = [];
+    cities = [];
+    counterMissiles = [];
+    enemyMissiles = [];
+    explosions = [];
+  };
+  this.startNextLevel = function() {
+    this.resetValues();
+    this.createBatteries();
+    this.createCities();
+    this.allEnemyMissilesLaunched = false;
+    this.completeLevel = false;
+    this.level += 1;
+    if (this.level % 3 === 0) {
+      this.missilesPerAddition += 1;
+    }
+    if (this.tickToAddMissiles > 15) {
+      this.tickToAddMissiles -= 15;
+      this.maxMissiles = this.level * this.missilesPerAddition;
+    }
   };
 };
 
@@ -368,10 +419,11 @@ game.createBatteries();
 game.createCities();
 
 setInterval(function() {
-  game.addEnemyMissiles();
-  game.handleCollisions();
-  update();
-  draw();
   tick += 1;
+  game.handleCollisions();
+  game.addEnemyMissiles();
+  game.checkCompleteLevel();
+  draw();
+  update();
 }, 1000/FPS);
 
